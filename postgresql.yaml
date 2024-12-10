@@ -1,0 +1,24 @@
+# configure_postgres.yml
+---
+- name: Configure PostgreSQL
+  hosts: db_servers
+  become: true
+  tasks:
+    - name: Install PostgreSQL
+      package:
+        name: postgresql
+        state: present
+    - name: Copy pg_hba.conf
+      template:
+        src: pg_hba.conf.j2
+        dest: /etc/postgresql/13/main/pg_hba.conf
+    - name: Copy postgresql.conf
+      template:
+        src: postgresql.conf.j2
+        dest: /etc/postgresql/13/main/postgresql.conf
+      notify: Reload PostgreSQL
+  handlers:
+    - name: Reload PostgreSQL
+      service:
+        name: postgresql
+        state: reloaded
