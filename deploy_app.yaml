@@ -1,0 +1,31 @@
+# deploy_app.yml
+---
+- name: Deploy Web Application
+  hosts: app_servers
+  become: true
+  tasks:
+    - name: Ensure required packages are installed
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - nginx
+        - python3
+        - python3-pip
+    - name: Copy application code
+      copy:
+        src: app_code/
+        dest: /var/www/myapp
+    - name: Install required Python packages
+      pip:
+        requirements: /var/www/myapp/requirements.txt
+    - name: Configure Nginx
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+      notify: Restart Nginx
+  handlers:
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted
